@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>Live Soccer Scoreboard</title>
+    <link>https://bizzmediaapps.github.io/TQM-Truck-Board/</link>
+    <description>Real-time updates for the ongoing soccer match.</description>
+    <item>
+      <title>Argentina vs Brazil</title>
+      <description>
+        <![CDATA[
+          <scoreboard>
+            <teamA>Argentina</teamA>
+            <teamB>Brazil</teamB>
+            <scoreA>2</scoreA>
+            <scoreB>1</scoreB>
+            <logoA>https://upload.wikimedia.org/wikipedia/en/1/1a/Flag_of_Argentina.svg</logoA>
+            <logoB>https://upload.wikimedia.org/wikipedia/en/0/05/Flag_of_Brazil.svg</logoB>
+            <timer>68:45</timer>
+            <status>Second Half</status>
+          </scoreboard>
+        ]]>
+      </description>
+      <pubDate>Wed, 30 Jul 2025 12:30:00 GMT</pubDate>
+      <guid>match-arg-bra-2025</guid>
+    </item>
+  </channel>
+</rss>
