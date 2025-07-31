@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Soccer Scoreboard</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #e8f4f8; margin: 0; padding: 20px; }
+    #scoreboard { background: #fff; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+    .team { display: flex; align-items: center; justify-content: center; margin: 10px; }
+    .team img { height: 40px; margin-right: 10px; }
+    .team-name { font-size: 20px; font-weight: bold; }
+    .score { font-size: 30px; margin: 10px 0; }
+    #timer, #status { font-size: 20px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Live Soccer Scoreboard</h1>
+  <div id="scoreboard">
+    <div class="team"><img id="logoA"><div id="teamA" class="team-name"></div></div>
+    <div class="score"><span id="scoreA">0</span> - <span id="scoreB">0</span></div>
+    <div class="team"><img id="logoB"><div id="teamB" class="team-name"></div></div>
+    <div id="timer">00:00</div>
+    <div id="status">Not Started</div>
+  </div>
+  <script>
+    async function fetchData() {
+      const res = await fetch('/api/scores');
+      const data = await res.json();
+      document.getElementById('teamA').textContent = data.teamA;
+      document.getElementById('teamB').textContent = data.teamB;
+      document.getElementById('scoreA').textContent = data.scoreA;
+      document.getElementById('scoreB').textContent = data.scoreB;
+      document.getElementById('status').textContent = data.status;
+      document.getElementById('logoA').src = data.logoA;
+      document.getElementById('logoB').src = data.logoB;
+      document.getElementById('timer').textContent = data.time;
+    }
+    fetchData();
+    setInterval(fetchData, 1000);
+  </script>
+</body>
+</html>
