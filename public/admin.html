@@ -317,14 +317,18 @@
        border-radius: 0 0 13px 13px;
      }
      
-     .preview-title {
-       font-size: 1.5rem;
+     .preview-welcome-message {
+       font-size: 1.3rem;
        font-weight: 900;
        color: #00ff41;
        text-shadow: 0 0 10px #00ff41;
-       margin-bottom: 12px;
-       letter-spacing: 2px;
+       margin-bottom: 15px;
+       letter-spacing: 1px;
        text-transform: uppercase;
+       background: rgba(0, 255, 65, 0.1);
+       padding: 10px 20px;
+       border-radius: 10px;
+       border: 1px solid #00ff41;
        animation: previewGlow 3s ease-in-out infinite;
      }
      
@@ -521,7 +525,7 @@
     
     <div class="preview-window-content">
       <div class="preview-scoreboard" id="preview-scoreboard">
-        <div class="preview-title">Live Soccer Scoreboard</div>
+        <div id="preview-welcomeMessage" class="preview-welcome-message" style="display: none;"></div>
         
         <div class="preview-teams-container">
           <div class="preview-team">
@@ -626,6 +630,14 @@
           <option value="Penalties">Penalties</option>
           <option value="Finished">Finished</option>
         </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="welcomeMessage">Welcome Message (Optional)</label>
+        <input type="text" id="welcomeMessage" placeholder="Enter welcome message (max 100 characters)" maxlength="100" />
+        <small style="color: #7f8c8d; font-size: 0.85rem; margin-top: 5px; display: block;">
+          Leave empty to hide the welcome message. This message will appear at the top of the scoreboard.
+        </small>
       </div>
       
       <div class="controls">
@@ -746,15 +758,16 @@
          document.getElementById('adminForm').addEventListener('submit', async function(e) {
        e.preventDefault();
        
-       const payload = {
-         teamA: document.getElementById('teamA').value,
-         logoA: document.getElementById('logoA').value,
-         teamB: document.getElementById('teamB').value,
-         logoB: document.getElementById('logoB').value,
-         scoreA: parseInt(document.getElementById('scoreA').value) || 0,
-         scoreB: parseInt(document.getElementById('scoreB').value) || 0,
-         status: document.getElementById('status').value
-       };
+             const payload = {
+        teamA: document.getElementById('teamA').value,
+        logoA: document.getElementById('logoA').value,
+        teamB: document.getElementById('teamB').value,
+        logoB: document.getElementById('logoB').value,
+        scoreA: parseInt(document.getElementById('scoreA').value) || 0,
+        scoreB: parseInt(document.getElementById('scoreB').value) || 0,
+        status: document.getElementById('status').value,
+        welcomeMessage: document.getElementById('welcomeMessage').value
+      };
        
        // Instantly update preview with form data
        updatePreviewInstantly(payload);
@@ -847,6 +860,9 @@
            updatePreviewElement('preview-status', data.status);
            updatePreviewElement('preview-timer', data.time);
 
+           // Update welcome message
+           updatePreviewWelcomeMessage(data.welcomeMessage);
+
            // Update logos with error handling
            updatePreviewLogo('preview-logoA', data.logoA);
            updatePreviewLogo('preview-logoB', data.logoB);
@@ -928,6 +944,18 @@
        }
      }
 
+     function updatePreviewWelcomeMessage(message) {
+       const welcomeEl = document.getElementById('preview-welcomeMessage');
+       if (welcomeEl) {
+         if (message && message.trim()) {
+           welcomeEl.textContent = message;
+           welcomeEl.style.display = 'block';
+         } else {
+           welcomeEl.style.display = 'none';
+         }
+       }
+     }
+
      function startPreviewUpdates() {
        if (previewUpdateInterval) {
          clearInterval(previewUpdateInterval);
@@ -967,6 +995,11 @@
        if (formData.logoA !== undefined) changes['preview-logoA'] = formData.logoA;
        if (formData.logoB !== undefined) changes['preview-logoB'] = formData.logoB;
        
+       // Handle welcome message separately
+       if (formData.welcomeMessage !== undefined) {
+         updatePreviewWelcomeMessage(formData.welcomeMessage);
+       }
+       
        // Update preview with 1-second delay
        updatePreviewWithDelay(changes);
      }
@@ -991,6 +1024,14 @@
            });
          }
        });
+
+       // Special handling for welcome message
+       const welcomeInput = document.getElementById('welcomeMessage');
+       if (welcomeInput) {
+         welcomeInput.addEventListener('input', (e) => {
+           updatePreviewWelcomeMessage(e.target.value);
+         });
+       }
      }
 
      // Enhanced timer action functions with preview updates (1-second delay)

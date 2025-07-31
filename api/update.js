@@ -6,6 +6,7 @@ let scoreboard = {
   logoA: "",
   logoB: "",
   status: "Not Started",
+  welcomeMessage: "",
   startTime: null,
   paused: true,
   pausedTime: 0,
@@ -75,7 +76,7 @@ export default function handler(req, res) {
   if (req.method === "POST") {
     try {
       const { 
-        teamA, teamB, scoreA, scoreB, logoA, logoB, status, action, triggers,
+        teamA, teamB, scoreA, scoreB, logoA, logoB, status, welcomeMessage, action, triggers,
         displaySettings
       } = req.body;
 
@@ -116,6 +117,7 @@ export default function handler(req, res) {
         if (logoA !== undefined) scoreboard.logoA = String(logoA);
         if (logoB !== undefined) scoreboard.logoB = String(logoB);
         if (status !== undefined) scoreboard.status = String(status);
+        if (welcomeMessage !== undefined) scoreboard.welcomeMessage = String(welcomeMessage).substring(0, 100);
       }
 
       // Handle media triggers

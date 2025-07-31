@@ -6,6 +6,7 @@ let scoreboard = {
   logoA: "",
   logoB: "",
   status: "Not Started",
+  welcomeMessage: "",
   startTime: null,
   paused: true,
   pausedTime: 0,
