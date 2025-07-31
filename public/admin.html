@@ -246,57 +246,66 @@
        position: sticky;
        top: 0;
        z-index: 100;
-       background: rgba(0, 0, 0, 0.95);
-       backdrop-filter: blur(10px);
+       background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+       backdrop-filter: blur(15px);
        margin: 20px;
-       border-radius: 15px;
-       border: 2px solid #00ff41;
-       box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+       border-radius: 20px;
+       border: 3px solid #00ff41;
+       box-shadow: 
+         0 0 40px rgba(0, 255, 65, 0.3),
+         inset 0 0 20px rgba(0, 255, 65, 0.05);
        margin-bottom: 30px;
+       overflow: hidden;
      }
      
      .preview-window-header {
        display: flex;
        justify-content: space-between;
        align-items: center;
-       padding: 15px 25px;
-       background: linear-gradient(45deg, #2c3e50, #34495e);
-       border-radius: 13px 13px 0 0;
-       border-bottom: 1px solid #00ff41;
+       padding: 20px 30px;
+       background: linear-gradient(135deg, #2c3e50, #1a1a1a);
+       border-bottom: 2px solid #00ff41;
+       position: relative;
+     }
+     
+     .preview-window-header::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: 0;
+       right: 0;
+       height: 2px;
+       background: linear-gradient(90deg, transparent, #00ff41, transparent);
+       animation: headerGlow 3s ease-in-out infinite;
      }
      
      .preview-window-header h2 {
        margin: 0;
        color: #00ff41;
-       font-size: 1.3rem;
-       text-shadow: 0 0 10px #00ff41;
+       font-size: 1.5rem;
+       text-shadow: 0 0 15px #00ff41;
+       font-weight: 900;
+       letter-spacing: 1px;
      }
      
      .preview-window-controls {
        display: flex;
-       gap: 20px;
        align-items: center;
      }
      
      .preview-status-indicator {
        display: flex;
        align-items: center;
-       gap: 8px;
-       background: rgba(39, 174, 96, 0.1);
-       padding: 5px 12px;
-       border-radius: 20px;
-       border: 1px solid #27ae60;
-       font-size: 0.9rem;
+       gap: 10px;
+       background: linear-gradient(45deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.1));
+       padding: 8px 16px;
+       border-radius: 25px;
+       border: 2px solid #27ae60;
+       font-size: 1rem;
        color: #27ae60;
-       font-weight: 600;
-     }
-     
-     .preview-update-info {
-       font-size: 0.9rem;
-       color: #bdc3c7;
-       background: rgba(255, 255, 255, 0.1);
-       padding: 5px 12px;
-       border-radius: 15px;
+       font-weight: 700;
+       text-shadow: 0 0 10px #27ae60;
+       box-shadow: 0 0 15px rgba(39, 174, 96, 0.3);
      }
      
      .preview-window-content {
@@ -308,13 +317,14 @@
        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
        color: #ffffff;
        text-align: center;
-       padding: 20px;
+       padding: 30px;
        position: relative;
-       min-height: 180px;
+       min-height: 200px;
        display: flex;
        flex-direction: column;
        justify-content: center;
-       border-radius: 0 0 13px 13px;
+       border-radius: 0 0 17px 17px;
+       border-top: 1px solid rgba(0, 255, 65, 0.3);
      }
      
      .preview-welcome-message {
@@ -442,9 +452,20 @@
        50% { text-shadow: 0 0 20px #00ff41, 0 0 30px #00ff41; }
      }
      
+     @keyframes headerGlow {
+       0%, 100% { 
+         opacity: 0.5;
+         transform: translateX(-100%);
+       }
+       50% { 
+         opacity: 1;
+         transform: translateX(0%);
+       }
+     }
+     
      @keyframes pulse {
        0%, 100% { opacity: 1; }
-       50% { opacity: 0.5; }
+       50% { opacity: 0.7; }
      }
      
             /* Responsive adjustments */
@@ -514,11 +535,7 @@
       <div class="preview-window-controls">
         <div class="preview-status-indicator">
           <span class="preview-indicator active">●</span>
-          <span>Live (1s delay)</span>
-        </div>
-        <div class="preview-update-info">
-          <span>Last: </span>
-          <span id="preview-last-update">Never</span>
+          <span>Live Preview</span>
         </div>
       </div>
     </div>
@@ -706,10 +723,7 @@
     
          // Preview Window Variables
      let previewUpdateInterval;
-     let lastPreviewUpdate = null;
      let previewIsActive = true;
-     let previewDelayQueue = [];
-     let previewDelayTimeout = null;
 
     // Create trigger inputs with better UI
     keys.forEach(key => {
@@ -782,15 +796,13 @@
          if (res.ok) {
            showMessage('Scoreboard updated successfully!', 'success');
            updateStatus();
-           // Force immediate preview update after successful API call
-           setTimeout(updatePreview, 100);
          } else {
            throw new Error('Update failed');
          }
        } catch (error) {
          showMessage('Failed to update scoreboard', 'error');
-         // Revert preview on error
-         setTimeout(updatePreview, 100);
+         // Revert preview on error by fetching current data
+         updatePreview();
        }
      });
 
@@ -866,11 +878,6 @@
            // Update logos with error handling
            updatePreviewLogo('preview-logoA', data.logoA);
            updatePreviewLogo('preview-logoB', data.logoB);
-
-           // Update last update time
-           lastPreviewUpdate = new Date();
-           document.getElementById('preview-last-update').textContent = 
-             lastPreviewUpdate.toLocaleTimeString();
            
            // Update status indicator
            document.querySelector('.preview-indicator').classList.add('active');
@@ -883,14 +890,9 @@
          });
      }
 
-     // Function to update preview with 1-second delay
-     function updatePreviewWithDelay(changes) {
-       // Clear any existing delay timeout
-       if (previewDelayTimeout) {
-         clearTimeout(previewDelayTimeout);
-       }
-       
-       // Immediately show the changes (instant feedback)
+     // Function to update preview instantly
+     function updatePreviewInstant(changes) {
+       // Immediately show the changes
        Object.keys(changes).forEach(key => {
          if (key.includes('logo')) {
            updatePreviewLogo(key, changes[key]);
@@ -898,17 +900,6 @@
            updatePreviewElement(key, changes[key]);
          }
        });
-       
-       // Update timestamp to show instant update
-       document.getElementById('preview-last-update').textContent = 
-         new Date().toLocaleTimeString() + ' (instant)';
-       
-       // Set 1-second delay for API sync
-       previewDelayTimeout = setTimeout(() => {
-         updatePreview(); // Sync with actual API data
-         document.getElementById('preview-last-update').textContent = 
-           new Date().toLocaleTimeString() + ' (synced)';
-       }, 1000);
      }
 
      function updatePreviewElement(id, value) {
@@ -964,8 +955,8 @@
        // Initial update
        updatePreview();
        
-       // Set 1-second interval for preview updates
-       previewUpdateInterval = setInterval(updatePreview, 1000);
+       // Set 2-second interval for background sync
+       previewUpdateInterval = setInterval(updatePreview, 2000);
        previewIsActive = true;
        
        document.querySelector('.preview-indicator').classList.add('active');
@@ -983,7 +974,7 @@
        document.querySelector('.preview-indicator').classList.remove('active');
      }
 
-     // Enhanced form submission with 1-second delay preview updates
+     // Enhanced form submission with instant preview updates
      function updatePreviewInstantly(formData) {
        // Create changes object for all form data
        const changes = {};
@@ -1000,11 +991,11 @@
          updatePreviewWelcomeMessage(formData.welcomeMessage);
        }
        
-       // Update preview with 1-second delay
-       updatePreviewWithDelay(changes);
+       // Update preview instantly
+       updatePreviewInstant(changes);
      }
 
-     // Add real-time form input listeners for preview updates with 1-second delay
+     // Add real-time form input listeners for instant preview updates
      function setupRealtimePreview() {
        const inputs = ['teamA', 'teamB', 'scoreA', 'scoreB', 'status', 'logoA', 'logoB'];
        
@@ -1015,12 +1006,12 @@
              const value = e.target.type === 'number' ? parseInt(e.target.value) || 0 : e.target.value;
              const previewId = 'preview-' + inputId;
              
-             // Create changes object for delayed update
+             // Create changes object for instant update
              const changes = {};
              changes[previewId] = value;
              
-             // Update preview with 1-second delay
-             updatePreviewWithDelay(changes);
+             // Update preview instantly
+             updatePreviewInstant(changes);
            });
          }
        });
@@ -1034,7 +1025,7 @@
        }
      }
 
-     // Enhanced timer action functions with preview updates (1-second delay)
+     // Enhanced timer action functions with instant preview updates
      async function sendActionWithPreview(action) {
        try {
          const response = await fetch('/api/update', {
@@ -1046,14 +1037,14 @@
          if (response.ok) {
            showMessage(`Timer ${action}ed successfully!`, 'success');
            
-           // Update preview status with 1-second delay
+           // Update preview status instantly
            let newStatus = 'Not Started';
            if (action === 'start') newStatus = '1st Half';
            else if (action === 'pause') newStatus = 'Paused';
            else if (action === 'stop') newStatus = 'Not Started';
            
            const changes = { 'preview-status': newStatus };
-           updatePreviewWithDelay(changes);
+           updatePreviewInstant(changes);
            
            updateStatus();
          } else {
