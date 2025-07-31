@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 <rss version="2.0">
   <channel>
     <title>Live Soccer Scoreboard</title>
-    <link>https://github.com/bizzmediaapps/TQM-Truck-Board/tree/main/</link>
+    <link>https://github.com/bizzmediaapps/TQM-Truck-Board/public/rss_feed_scoreboard.xml/link>
     <description>Real-time updates for the ongoing soccer match.</description>
     <item>
       <title>${teamA} vs ${teamB}</title>
