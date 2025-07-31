@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel - Update Scoreboard</title>
+  <style>
+    body { font-family: Arial, padding: 20px; background-color: #f2f2f2; }
+    form { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, button { width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; }
+    h2 { text-align: center; }
+    #message { text-align: center; margin-top: 15px; font-weight: bold; color: green; }
+  </style>
+</head>
+<body>
+  <form id="scoreForm">
+    <h2>Update Scoreboard</h2>
+    <input type="text" id="teamA" placeholder="Team A Name" required />
+    <input type="text" id="teamB" placeholder="Team B Name" required />
+    <input type="number" id="scoreA" placeholder="Team A Score" required />
+    <input type="number" id="scoreB" placeholder="Team B Score" required />
+    <input type="text" id="status" placeholder="Match Status" required />
+    <button type="submit">Update Score</button>
+    <div id="message"></div>
+  </form>
+
+  <script>
+    document.getElementById('scoreForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const teamA = document.getElementById('teamA').value;
+      const teamB = document.getElementById('teamB').value;
+      const scoreA = parseInt(document.getElementById('scoreA').value);
+      const scoreB = parseInt(document.getElementById('scoreB').value);
+      const status = document.getElementById('status').value;
+
+      const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamA, teamB, scoreA, scoreB, status })
+      });
+
+      const data = await res.json();
+      document.getElementById('message').textContent = data.message || 'Score updated!';
+    });
+  </script>
+</body>
+</html>
