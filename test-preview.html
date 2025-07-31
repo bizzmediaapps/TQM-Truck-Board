@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Preview Window Test - Soccer Scoreboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      color: white;
+    }
+    
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #00ff41;
+      text-shadow: 0 0 10px #00ff41;
+      margin-bottom: 30px;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .feature-list li {
+      background: rgba(0, 255, 65, 0.1);
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #00ff41;
+    }
+    
+    .feature-list li:before {
+      content: "✅ ";
+      color: #00ff41;
+      font-weight: bold;
+    }
+    
+    .demo-links {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    
+    .demo-link {
+      background: linear-gradient(45deg, #3498db, #2980b9);
+      color: white;
+      padding: 15px 25px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: transform 0.3s ease;
+    }
+    
+    .demo-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+    
+    .preview-demo {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .preview-demo img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 2px solid #00ff41;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🎉 Preview Window Successfully Implemented!</h1>
+    
+    <div class="preview-demo">
+      <h2>📺 New Features</h2>
+      <p>The admin panel now includes a <strong>Live Preview Window</strong> at the top of the page!</p>
+    </div>
+    
+    <ul class="feature-list">
+      <li><strong>Top Position:</strong> Preview window is now positioned at the top of the admin panel for better visibility</li>
+      <li><strong>1-Second Delay:</strong> All changes in the admin panel are reflected in the preview with exactly 1 second delay</li>
+      <li><strong>Instant Feedback:</strong> Changes appear immediately for visual feedback, then sync with API after 1 second</li>
+      <li><strong>Sticky Header:</strong> Preview window stays visible while scrolling through controls</li>
+      <li><strong>Real-time Updates:</strong> Preview updates automatically every 1 second with live data</li>
+      <li><strong>Visual Indicators:</strong> Status indicators show when preview is live, instant, or synced</li>
+      <li><strong>Form Integration:</strong> All form inputs (team names, scores, logos, status) update preview instantly</li>
+      <li><strong>Timer Controls:</strong> Start/Pause/Stop buttons update preview status with 1-second delay</li>
+      <li><strong>Responsive Design:</strong> Preview adapts to different screen sizes and mobile devices</li>
+      <li><strong>Error Handling:</strong> Preview gracefully handles connection issues and API errors</li>
+    </ul>
+    
+    <div class="preview-demo">
+      <h3>🎛️ How It Works</h3>
+      <p><strong>Type in any field</strong> → <em>Instant visual feedback</em> → <strong>1-second delay</strong> → <em>API sync</em> → <strong>Live update</strong></p>
+    </div>
+    
+    <div class="demo-links">
+      <a href="/public/admin.html" class="demo-link" target="_blank">
+        🎛️ Try Admin Panel
+      </a>
+      <a href="/public/index.html" class="demo-link" target="_blank">
+        🖥️ View LED Display
+      </a>
+      <a href="/public/test-pattern.html" class="demo-link" target="_blank">
+        🎯 Test Pattern
+      </a>
+    </div>
+    
+    <div class="preview-demo">
+      <h3>🔧 Technical Implementation</h3>
+      <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
+        <li><strong>updatePreviewWithDelay():</strong> Handles 1-second delayed updates</li>
+        <li><strong>setupRealtimePreview():</strong> Monitors form input changes</li>
+        <li><strong>Sticky positioning:</strong> CSS position: sticky for header visibility</li>
+        <li><strong>Responsive scaling:</strong> Preview adapts to different screen sizes</li>
+        <li><strong>Error recovery:</strong> Graceful handling of network issues</li>
+      </ul>
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(0, 255, 65, 0.1); border-radius: 10px;">
+      <h3>🚀 Ready for Production!</h3>
+      <p>The preview window is fully integrated and ready for Viplex LED display deployment.</p>
+      <p><strong>Perfect for operators</strong> who need to see exactly how their changes will appear on the LED screen!</p>
+    </div>
+  </div>
+  
+  <script>
+    // Auto-redirect to admin panel after 10 seconds for demo
+    setTimeout(() => {
+      if (confirm('Would you like to try the admin panel with the new preview window?')) {
+        window.open('/public/admin.html', '_blank');
+      }
+    }, 10000);
+  </script>
+</body>
+</html>

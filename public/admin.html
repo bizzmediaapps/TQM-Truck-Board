@@ -241,43 +241,88 @@
       font-weight: bold;
     }
     
-         /* Live Preview Panel Styles */
-     .preview-section {
-       grid-column: 1 / -1; /* Span full width */
-       margin-bottom: 20px;
+         /* Live Preview Window Styles - Top of Page */
+     .preview-window {
+       position: sticky;
+       top: 0;
+       z-index: 100;
+       background: rgba(0, 0, 0, 0.95);
+       backdrop-filter: blur(10px);
+       margin: 20px;
+       border-radius: 15px;
+       border: 2px solid #00ff41;
+       box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+       margin-bottom: 30px;
      }
      
-     .preview-container {
-       background: rgba(0, 0, 0, 0.9);
+     .preview-window-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       padding: 15px 25px;
+       background: linear-gradient(45deg, #2c3e50, #34495e);
+       border-radius: 13px 13px 0 0;
+       border-bottom: 1px solid #00ff41;
+     }
+     
+     .preview-window-header h2 {
+       margin: 0;
+       color: #00ff41;
+       font-size: 1.3rem;
+       text-shadow: 0 0 10px #00ff41;
+     }
+     
+     .preview-window-controls {
+       display: flex;
+       gap: 20px;
+       align-items: center;
+     }
+     
+     .preview-status-indicator {
+       display: flex;
+       align-items: center;
+       gap: 8px;
+       background: rgba(39, 174, 96, 0.1);
+       padding: 5px 12px;
+       border-radius: 20px;
+       border: 1px solid #27ae60;
+       font-size: 0.9rem;
+       color: #27ae60;
+       font-weight: 600;
+     }
+     
+     .preview-update-info {
+       font-size: 0.9rem;
+       color: #bdc3c7;
+       background: rgba(255, 255, 255, 0.1);
+       padding: 5px 12px;
        border-radius: 15px;
-       padding: 20px;
-       margin-bottom: 15px;
-       border: 2px solid #00ff41;
-       box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+     }
+     
+     .preview-window-content {
+       padding: 0;
+       overflow: hidden;
      }
      
      .preview-scoreboard {
        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
        color: #ffffff;
        text-align: center;
-       padding: 15px;
-       border-radius: 10px;
+       padding: 20px;
        position: relative;
-       min-height: 200px;
+       min-height: 180px;
        display: flex;
        flex-direction: column;
        justify-content: center;
-       transform: scale(0.6);
-       transform-origin: center;
-       margin: -50px auto;
+       border-radius: 0 0 13px 13px;
      }
      
      .preview-title {
-       font-size: 1.8rem;
+       font-size: 1.5rem;
        font-weight: 900;
        color: #00ff41;
        text-shadow: 0 0 10px #00ff41;
-       margin-bottom: 15px;
+       margin-bottom: 12px;
        letter-spacing: 2px;
        text-transform: uppercase;
        animation: previewGlow 3s ease-in-out infinite;
@@ -321,18 +366,18 @@
      }
      
      .preview-score {
-       font-size: 3rem;
+       font-size: 2.5rem;
        font-weight: 900;
        color: #00ff41;
        text-shadow: 0 0 15px #00ff41;
        display: flex;
        align-items: center;
-       gap: 15px;
+       gap: 12px;
      }
      
      .preview-score-separator {
        color: #ffffff;
-       font-size: 2.5rem;
+       font-size: 2rem;
      }
      
      .preview-match-info {
@@ -366,27 +411,7 @@
        flex: 1;
      }
      
-     .preview-controls {
-       display: flex;
-       justify-content: space-between;
-       align-items: center;
-       margin-top: 15px;
-       padding: 10px;
-       background: rgba(255, 255, 255, 0.05);
-       border-radius: 8px;
-       font-size: 0.9rem;
-     }
-     
-     .preview-info {
-       display: flex;
-       align-items: center;
-       gap: 8px;
-     }
-     
-     .preview-label {
-       color: #bdc3c7;
-       font-weight: 600;
-     }
+
      
      .preview-indicator {
        color: #27ae60;
@@ -418,45 +443,58 @@
        50% { opacity: 0.5; }
      }
      
-     /* Responsive adjustments */
-     @media (max-width: 1200px) {
-       .preview-scoreboard {
-         transform: scale(0.7);
-         margin: -40px auto;
+            /* Responsive adjustments */
+       @media (max-width: 768px) {
+         .container {
+           grid-template-columns: 1fr;
+         }
+         
+         .preview-window {
+           margin: 10px;
+         }
+         
+         .preview-window-header {
+           padding: 10px 15px;
+           flex-direction: column;
+           gap: 10px;
+           align-items: flex-start;
+         }
+         
+         .preview-window-controls {
+           gap: 15px;
+           width: 100%;
+           justify-content: space-between;
+         }
+         
+         .preview-scoreboard {
+           padding: 15px;
+         }
+         
+         .preview-teams-container {
+           flex-direction: column;
+           gap: 8px;
+         }
+         
+         .preview-score-container {
+           margin: 8px 0;
+         }
+         
+         .preview-score {
+           font-size: 2rem;
+         }
+         
+         .preview-score-separator {
+           font-size: 1.5rem;
+         }
+         
+         .header h1 {
+           font-size: 2rem;
+         }
+         
+         .controls {
+           grid-template-columns: 1fr;
+         }
        }
-     }
-     
-     @media (max-width: 768px) {
-       .container {
-         grid-template-columns: 1fr;
-       }
-       
-       .preview-section {
-         grid-column: 1;
-       }
-       
-       .preview-scoreboard {
-         transform: scale(0.8);
-         margin: -30px auto;
-       }
-       
-       .preview-teams-container {
-         flex-direction: column;
-         gap: 10px;
-       }
-       
-       .preview-score-container {
-         margin: 10px 0;
-       }
-       
-       .header h1 {
-         font-size: 2rem;
-       }
-       
-       .controls {
-         grid-template-columns: 1fr;
-       }
-     }
   </style>
 </head>
 <body>
@@ -465,53 +503,55 @@
     <p>Advanced Soccer Scoreboard Management for Viplex Software LED Screens</p>
   </div>
 
-  <div class="container">
-    <!-- Live Preview Panel -->
-    <div class="led-controls preview-section">
+  <!-- Live Preview Window - Top of Page -->
+  <div class="preview-window">
+    <div class="preview-window-header">
       <h2>📺 Live Scoreboard Preview</h2>
-      <div class="preview-container">
-        <div class="preview-scoreboard" id="preview-scoreboard">
-          <div class="preview-title">Live Soccer Scoreboard</div>
-          
-          <div class="preview-teams-container">
-            <div class="preview-team">
-              <img id="preview-logoA" alt="" src="" style="display: none;">
-              <div id="preview-teamA" class="preview-team-name">Team A</div>
-            </div>
-            
-            <div class="preview-score-container">
-              <div class="preview-score">
-                <span id="preview-scoreA">0</span>
-                <span class="preview-score-separator">-</span>
-                <span id="preview-scoreB">0</span>
-              </div>
-            </div>
-            
-            <div class="preview-team">
-              <img id="preview-logoB" alt="" src="" style="display: none;">
-              <div id="preview-teamB" class="preview-team-name">Team B</div>
-            </div>
-          </div>
-          
-          <div class="preview-match-info">
-            <div id="preview-timer" class="preview-timer">00:00</div>
-            <div id="preview-status" class="preview-status">Not Started</div>
-          </div>
+      <div class="preview-window-controls">
+        <div class="preview-status-indicator">
+          <span class="preview-indicator active">●</span>
+          <span>Live (1s delay)</span>
         </div>
-        
-        <div class="preview-controls">
-          <div class="preview-info">
-            <span class="preview-label">Last Update:</span>
-            <span id="preview-last-update">Never</span>
-          </div>
-          <div class="preview-info">
-            <span class="preview-label">Auto-refresh:</span>
-            <span class="preview-indicator active">●</span>
-            <span>1sec</span>
-          </div>
+        <div class="preview-update-info">
+          <span>Last: </span>
+          <span id="preview-last-update">Never</span>
         </div>
       </div>
     </div>
+    
+    <div class="preview-window-content">
+      <div class="preview-scoreboard" id="preview-scoreboard">
+        <div class="preview-title">Live Soccer Scoreboard</div>
+        
+        <div class="preview-teams-container">
+          <div class="preview-team">
+            <img id="preview-logoA" alt="" src="" style="display: none;">
+            <div id="preview-teamA" class="preview-team-name">Team A</div>
+          </div>
+          
+          <div class="preview-score-container">
+            <div class="preview-score">
+              <span id="preview-scoreA">0</span>
+              <span class="preview-score-separator">-</span>
+              <span id="preview-scoreB">0</span>
+            </div>
+          </div>
+          
+          <div class="preview-team">
+            <img id="preview-logoB" alt="" src="" style="display: none;">
+            <div id="preview-teamB" class="preview-team-name">Team B</div>
+          </div>
+        </div>
+        
+        <div class="preview-match-info">
+          <div id="preview-timer" class="preview-timer">00:00</div>
+          <div id="preview-status" class="preview-status">Not Started</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
 
     <!-- LED Display Status -->
     <div class="led-controls">
@@ -652,10 +692,12 @@
     const keys = ['1','2','3','4','5','6','7','8','9','0'];
     const triggerInputs = document.getElementById('triggerInputs');
     
-    // Preview Panel Variables
-    let previewUpdateInterval;
-    let lastPreviewUpdate = null;
-    let previewIsActive = true;
+         // Preview Window Variables
+     let previewUpdateInterval;
+     let lastPreviewUpdate = null;
+     let previewIsActive = true;
+     let previewDelayQueue = [];
+     let previewDelayTimeout = null;
 
     // Create trigger inputs with better UI
     keys.forEach(key => {
@@ -790,7 +832,7 @@
       // Here you would send a clear command to the LED display
     }
 
-         // Preview Panel Functions
+         // Preview Window Functions
      function updatePreview() {
        if (!previewIsActive) return;
        
@@ -823,6 +865,34 @@
            document.querySelector('.preview-indicator').classList.add('inactive');
            document.querySelector('.preview-indicator').classList.remove('active');
          });
+     }
+
+     // Function to update preview with 1-second delay
+     function updatePreviewWithDelay(changes) {
+       // Clear any existing delay timeout
+       if (previewDelayTimeout) {
+         clearTimeout(previewDelayTimeout);
+       }
+       
+       // Immediately show the changes (instant feedback)
+       Object.keys(changes).forEach(key => {
+         if (key.includes('logo')) {
+           updatePreviewLogo(key, changes[key]);
+         } else {
+           updatePreviewElement(key, changes[key]);
+         }
+       });
+       
+       // Update timestamp to show instant update
+       document.getElementById('preview-last-update').textContent = 
+         new Date().toLocaleTimeString() + ' (instant)';
+       
+       // Set 1-second delay for API sync
+       previewDelayTimeout = setTimeout(() => {
+         updatePreview(); // Sync with actual API data
+         document.getElementById('preview-last-update').textContent = 
+           new Date().toLocaleTimeString() + ' (synced)';
+       }, 1000);
      }
 
      function updatePreviewElement(id, value) {
@@ -885,24 +955,23 @@
        document.querySelector('.preview-indicator').classList.remove('active');
      }
 
-     // Enhanced form submission with instant preview updates
+     // Enhanced form submission with 1-second delay preview updates
      function updatePreviewInstantly(formData) {
-       // Immediately update preview with form data
-       if (formData.teamA !== undefined) updatePreviewElement('preview-teamA', formData.teamA);
-       if (formData.teamB !== undefined) updatePreviewElement('preview-teamB', formData.teamB);
-       if (formData.scoreA !== undefined) updatePreviewElement('preview-scoreA', formData.scoreA);
-       if (formData.scoreB !== undefined) updatePreviewElement('preview-scoreB', formData.scoreB);
-       if (formData.status !== undefined) updatePreviewElement('preview-status', formData.status);
-       if (formData.logoA !== undefined) updatePreviewLogo('preview-logoA', formData.logoA);
-       if (formData.logoB !== undefined) updatePreviewLogo('preview-logoB', formData.logoB);
+       // Create changes object for all form data
+       const changes = {};
+       if (formData.teamA !== undefined) changes['preview-teamA'] = formData.teamA;
+       if (formData.teamB !== undefined) changes['preview-teamB'] = formData.teamB;
+       if (formData.scoreA !== undefined) changes['preview-scoreA'] = formData.scoreA;
+       if (formData.scoreB !== undefined) changes['preview-scoreB'] = formData.scoreB;
+       if (formData.status !== undefined) changes['preview-status'] = formData.status;
+       if (formData.logoA !== undefined) changes['preview-logoA'] = formData.logoA;
+       if (formData.logoB !== undefined) changes['preview-logoB'] = formData.logoB;
        
-       // Update timestamp
-       lastPreviewUpdate = new Date();
-       document.getElementById('preview-last-update').textContent = 
-         lastPreviewUpdate.toLocaleTimeString() + ' (instant)';
+       // Update preview with 1-second delay
+       updatePreviewWithDelay(changes);
      }
 
-     // Add real-time form input listeners for instant preview updates
+     // Add real-time form input listeners for preview updates with 1-second delay
      function setupRealtimePreview() {
        const inputs = ['teamA', 'teamB', 'scoreA', 'scoreB', 'status', 'logoA', 'logoB'];
        
@@ -913,21 +982,18 @@
              const value = e.target.type === 'number' ? parseInt(e.target.value) || 0 : e.target.value;
              const previewId = 'preview-' + inputId;
              
-             if (inputId.includes('logo')) {
-               updatePreviewLogo(previewId, value);
-             } else {
-               updatePreviewElement(previewId, value);
-             }
+             // Create changes object for delayed update
+             const changes = {};
+             changes[previewId] = value;
              
-             // Show instant update indicator
-             document.getElementById('preview-last-update').textContent = 
-               new Date().toLocaleTimeString() + ' (typing...)';
+             // Update preview with 1-second delay
+             updatePreviewWithDelay(changes);
            });
          }
        });
      }
 
-     // Enhanced timer action functions with preview updates
+     // Enhanced timer action functions with preview updates (1-second delay)
      async function sendActionWithPreview(action) {
        try {
          const response = await fetch('/api/update', {
@@ -939,16 +1005,15 @@
          if (response.ok) {
            showMessage(`Timer ${action}ed successfully!`, 'success');
            
-           // Instantly update preview status
+           // Update preview status with 1-second delay
            let newStatus = 'Not Started';
            if (action === 'start') newStatus = '1st Half';
            else if (action === 'pause') newStatus = 'Paused';
            else if (action === 'stop') newStatus = 'Not Started';
            
-           updatePreviewElement('preview-status', newStatus);
+           const changes = { 'preview-status': newStatus };
+           updatePreviewWithDelay(changes);
            
-           // Force immediate preview update
-           setTimeout(updatePreview, 100);
            updateStatus();
          } else {
            throw new Error('Failed to send action');
