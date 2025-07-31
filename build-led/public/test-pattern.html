@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LED Display Test Pattern</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: white;
+      font-family: Arial Black, Arial, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .pattern {
+      font-size: 10vw;
+      text-align: center;
+      animation: colorCycle 3s infinite;
+    }
+    @keyframes colorCycle {
+      0% { color: #ff0000; }
+      25% { color: #00ff00; }
+      50% { color: #0000ff; }
+      75% { color: #ffff00; }
+      100% { color: #ff0000; }
+    }
+    .info {
+      position: absolute;
+      bottom: 50px;
+      font-size: 3vw;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="pattern">LED TEST</div>
+  <div class="info">
+    Resolution: <span id="resolution"></span><br>
+    Press ESC to return to scoreboard
+  </div>
+  <script>
+    document.getElementById('resolution').textContent = 
+      screen.width + 'x' + screen.height;
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        window.location.href = '/';
+      }
+    });
+  </script>
+</body>
+</html>

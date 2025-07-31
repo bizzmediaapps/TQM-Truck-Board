@@ -1,0 +1,20 @@
+{
+  "buildTime": "2025-07-31T17:38:58Z",
+  "version": "1.0.0",
+  "target": "led-display",
+  "optimized": true,
+  "viplexCompatible": true,
+  "features": {
+    "fullScreen": true,
+    "highContrast": true,
+    "scalableFonts": true,
+    "mediaTriggers": true,
+    "realTimeUpdates": true,
+    "mobileAdmin": true
+  },
+  "requirements": {
+    "minResolution": "1920x1080",
+    "software": "Viplex Express 2.0+",
+    "browser": "Chrome 90+, Firefox 88+, Edge 90+"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "soccer-scoreboard-led",
+  "version": "1.0.0",
+  "description": "High-performance soccer scoreboard optimized for Viplex Software Large LED Screens",
+  "main": "api/scores.js",
+  "scripts": {
+    "start": "node api/scores.js",
+    "dev": "vercel dev",
+    "build": "echo 'Build completed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["led", "display", "scoreboard", "viplex", "soccer"],
+  "author": "LED Display Solutions",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "."
+  }
+}
