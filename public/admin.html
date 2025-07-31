@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel - Soccer Scoreboard</title>
+  <style>
+    body { font-family: Arial; background: #f2f2f2; padding: 20px; }
+    form, .triggers { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; margin: 20px auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, button, select { width: 100%; padding: 10px; margin-top: 10px; }
+    .controls { display: flex; justify-content: space-between; }
+    #message { text-align: center; margin-top: 10px; color: green; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <form id="adminForm">
+    <h2>Update Scoreboard</h2>
+    <input type="text" id="teamA" placeholder="Team A Name" />
+    <input type="url" id="logoA" placeholder="Team A Logo URL" />
+    <input type="text" id="teamB" placeholder="Team B Name" />
+    <input type="url" id="logoB" placeholder="Team B Logo URL" />
+    <input type="number" id="scoreA" placeholder="Team A Score" />
+    <input type="number" id="scoreB" placeholder="Team B Score" />
+    <input type="text" id="status" placeholder="Match Status" />
+    <div class="controls">
+      <button type="button" onclick="sendAction('start')">Start</button>
+      <button type="button" onclick="sendAction('pause')">Pause</button>
+      <button type="button" onclick="sendAction('stop')">Stop</button>
+    </div>
+    <button type="submit">Update Info</button>
+    <div id="message"></div>
+  </form>
+
+  <div class="triggers">
+    <h2>Configure Media Triggers</h2>
+    <div id="triggerInputs"></div>
+    <button onclick="submitTriggers()">Save Triggers</button>
+  </div>
+
+  <script>
+    const keys = ['1','2','3','4','5','6','7','8','9','0'];
+    const triggerInputs = document.getElementById('triggerInputs');
+
+    keys.forEach(key => {
+      const input = document.createElement('input');
+      input.placeholder = `Media URL for key "${key}"`;
+      input.id = `trigger-${key}`;
+      triggerInputs.appendChild(input);
+    });
+
+    async function sendAction(action) {
+      await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+    }
+
+    document.getElementById('adminForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const payload = {
+        teamA: document.getElementById('teamA').value,
+        logoA: document.getElementById('logoA').value,
+        teamB: document.getElementById('teamB').value,
+        logoB: document.getElementById('logoB').value,
+        scoreA: parseInt(document.getElementById('scoreA').value),
+        scoreB: parseInt(document.getElementById('scoreB').value),
+        status: document.getElementById('status').value
+      };
+      const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      document.getElementById('message').textContent = data.message;
+    });
+
+    async function submitTriggers() {
+      const triggers = {};
+      keys.forEach(key => {
+        const val = document.getElementById(`trigger-${key}`).value;
+        if (val) triggers[key] = val;
+      });
+      await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggers })
+      });
+      alert("Triggers saved!");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Soccer Scoreboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: black;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    #scoreboard {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+    .team {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .team img {
+      height: 40px;
+      margin-right: 10px;
+    }
+    .team-name {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .score {
+      font-size: 36px;
+      margin: 20px 0;
+    }
+    #timer, #status {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+    video, img {
+      max-width: 100%;
+      display: none;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live Soccer Scoreboard</h1>
+  <div id="scoreboard">
+    <div class="team">
+      <img id="logoA" alt="">
+      <div id="teamA" class="team-name">Team A</div>
+    </div>
+    <div class="score">
+      <span id="scoreA">0</span> - <span id="scoreB">0</span>
+    </div>
+    <div class="team">
+      <img id="logoB" alt="">
+      <div id="teamB" class="team-name">Team B</div>
+    </div>
+    <div id="timer">00:00</div>
+    <div id="status">Not Started</div>
+  </div>
+
+  <div id="mediaContainer"></div>
+
+  <script>
+    let triggers = {};
+
+    async function fetchData() {
+      const res = await fetch('/api/scores');
+      const data = await res.json();
+
+      document.getElementById('teamA').textContent = data.teamA;
+      document.getElementById('teamB').textContent = data.teamB;
+      document.getElementById('scoreA').textContent = data.scoreA;
+      document.getElementById('scoreB').textContent = data.scoreB;
+      document.getElementById('status').textContent = data.status;
+      document.getElementById('logoA').src = data.logoA || '';
+      document.getElementById('logoB').src = data.logoB || '';
+      document.getElementById('timer').textContent = data.time;
+
+      if (data.triggers) {
+        triggers = data.triggers;
+      }
+    }
+
+    function showMedia(src) {
+      const container = document.getElementById('mediaContainer');
+      container.innerHTML = "";
+
+      if (src.endsWith(".mp4")) {
+        const video = document.createElement("video");
+        video.src = src;
+        video.autoplay = true;
+        video.controls = true;
+        video.style.display = "block";
+        container.appendChild(video);
+      } else {
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.display = "block";
+        container.appendChild(img);
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const trigger = triggers[e.key.toLowerCase()];
+      if (trigger) {
+        showMedia(trigger);
+      }
+    });
+
+    fetchData();
+    setInterval(fetchData, 1000);
+  </script>
+</body>
+</html>
