@@ -265,6 +265,10 @@
   <script>
     let triggers = {};
     let mediaTimeout;
+    let ws = null;
+    let reconnectAttempts = 0;
+    let maxReconnectAttempts = 5;
+    let reconnectDelay = 1000;
 
     // Optimize for LED display performance
     document.addEventListener('DOMContentLoaded', function() {
@@ -275,34 +279,126 @@
       // Force hardware acceleration
       document.body.style.transform = 'translateZ(0)';
       
+      // Initialize WebSocket connection
+      initWebSocket();
+    });
+
+    function initWebSocket() {
+      // Determine WebSocket URL based on current location
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsPort = window.location.hostname === 'localhost' ? '8080' : window.location.port;
+      const wsUrl = `${protocol}//${window.location.hostname}:${wsPort}`;
+      
+      try {
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = function(event) {
+          console.log('WebSocket connected for LED display');
+          reconnectAttempts = 0;
+          reconnectDelay = 1000;
+          
+          // Request initial state
+          ws.send(JSON.stringify({
+            type: 'get_state',
+            timestamp: Date.now()
+          }));
+        };
+        
+        ws.onmessage = function(event) {
+          try {
+            const message = JSON.parse(event.data);
+            handleWebSocketMessage(message);
+          } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+          }
+        };
+        
+        ws.onclose = function(event) {
+          console.log('WebSocket connection closed:', event.code, event.reason);
+          ws = null;
+          
+          // Attempt to reconnect with exponential backoff
+          if (reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++;
+            const delay = reconnectDelay * Math.pow(2, reconnectAttempts - 1);
+            console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+            
+            setTimeout(() => {
+              if (!ws || ws.readyState === WebSocket.CLOSED) {
+                initWebSocket();
+              }
+            }, delay);
+          } else {
+            console.error('Max reconnection attempts reached. Falling back to polling.');
+            fallbackToPolling();
+          }
+        };
+        
+        ws.onerror = function(error) {
+          console.error('WebSocket error:', error);
+        };
+        
+      } catch (error) {
+        console.error('Failed to create WebSocket connection:', error);
+        fallbackToPolling();
+      }
+    }
+
+    function handleWebSocketMessage(message) {
+      switch (message.type) {
+        case 'initial_state':
+        case 'scoreboard_update':
+        case 'state_update':
+          updateScoreboardFromData(message.data);
+          break;
+          
+        case 'pong':
+          // Handle ping/pong for connection health
+          break;
+          
+        case 'error':
+          console.error('WebSocket server error:', message.message);
+          break;
+          
+        default:
+          console.warn('Unknown WebSocket message type:', message.type);
+      }
+    }
+
+    function updateScoreboardFromData(data) {
+      // Update team information
+      updateElement('teamA', data.teamA);
+      updateElement('teamB', data.teamB);
+      updateElement('scoreA', data.scoreA);
+      updateElement('scoreB', data.scoreB);
+      updateElement('status', data.status);
+      updateElement('timer', data.time);
+
+      // Update logos with error handling
+      updateLogo('logoA', data.logoA);
+      updateLogo('logoB', data.logoB);
+
+      // Update triggers
+      if (data.triggers) {
+        triggers = data.triggers;
+      }
+    }
+
+    function fallbackToPolling() {
+      console.log('Falling back to HTTP polling for LED display');
+      
       // Set initial fetch
       fetchData();
       
       // Set interval for updates (optimized for LED displays)
-      setInterval(fetchData, 2000); // Reduced frequency for LED stability
-    });
+      setInterval(fetchData, 3000); // Slightly slower than before due to fallback status
+    }
 
     async function fetchData() {
       try {
         const res = await fetch('/api/scores');
         const data = await res.json();
-
-        // Update team information
-        updateElement('teamA', data.teamA);
-        updateElement('teamB', data.teamB);
-        updateElement('scoreA', data.scoreA);
-        updateElement('scoreB', data.scoreB);
-        updateElement('status', data.status);
-        updateElement('timer', data.time);
-
-        // Update logos with error handling
-        updateLogo('logoA', data.logoA);
-        updateLogo('logoB', data.logoB);
-
-        // Update triggers
-        if (data.triggers) {
-          triggers = data.triggers;
-        }
+        updateScoreboardFromData(data);
       } catch (error) {
         console.warn('Failed to fetch data:', error);
       }
@@ -414,9 +510,28 @@
       if (document.hidden) {
         hideMedia();
       } else {
-        fetchData(); // Refresh data when display becomes visible
+        // Refresh connection when display becomes visible
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          initWebSocket();
+        } else {
+          // Request fresh data
+          ws.send(JSON.stringify({
+            type: 'get_state',
+            timestamp: Date.now()
+          }));
+        }
       }
     });
+
+    // Periodic connection health check
+    setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'ping',
+          timestamp: Date.now()
+        }));
+      }
+    }, 30000); // Every 30 seconds
   </script>
 </body>
 </html>

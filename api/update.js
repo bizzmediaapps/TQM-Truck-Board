@@ -1,24 +1,4 @@
-let scoreboard = {
-  teamA: "Team A",
-  teamB: "Team B",
-  scoreA: 0,
-  scoreB: 0,
-  logoA: "",
-  logoB: "",
-  status: "Not Started",
-  startTime: null,
-  paused: true,
-  pausedTime: 0,
-  triggers: {},
-  // LED Display specific settings
-  displaySettings: {
-    brightness: 100,
-    contrast: 100,
-    refreshRate: 60,
-    resolution: "1920x1080",
-    lastUpdate: new Date().toISOString()
-  }
-};
+import { broadcastUpdate, getCurrentState, scoreboard } from './websocket.js';
 
 function validateScoreboardData(data) {
   const errors = [];
@@ -88,6 +68,9 @@ export default function handler(req, res) {
           timestamp: Date.now()
         });
       }
+
+      // Store previous state for change detection
+      const previousState = JSON.stringify(getCurrentState());
 
       // Handle timer actions
       if (action === "start") {
@@ -162,6 +145,16 @@ export default function handler(req, res) {
       // Update timestamp
       scoreboard.displaySettings.lastUpdate = new Date().toISOString();
 
+      // Get current state and broadcast if changed
+      const currentState = getCurrentState();
+      const currentStateString = JSON.stringify(currentState);
+      
+      if (previousState !== currentStateString) {
+        // Broadcast update to all connected WebSocket clients
+        broadcastUpdate('scoreboard_update', currentState);
+        console.log('Broadcasted real-time update to connected clients');
+      }
+
       return res.status(200).json({ 
         message: "Scoreboard updated successfully",
         timestamp: Date.now(),
@@ -170,7 +163,8 @@ export default function handler(req, res) {
           timer: !!action,
           triggers: !!triggers,
           displaySettings: !!displaySettings
-        }
+        },
+        realtime: previousState !== currentStateString
       });
 
     } catch (error) {

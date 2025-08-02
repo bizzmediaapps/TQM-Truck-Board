@@ -689,15 +689,22 @@
   </div>
 
   <script>
-    const keys = ['1','2','3','4','5','6','7','8','9','0'];
+    let keys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+    let previewIsActive = false;
+    let previewUpdateInterval = null;
+    let previewDelayTimeout = null;
+    
+    // WebSocket variables for real-time communication
+    let ws = null;
+    let wsReconnectAttempts = 0;
+    let wsMaxReconnectAttempts = 3;
+    let wsReconnectDelay = 2000;
+    let isConnectedToWebSocket = false;
+
     const triggerInputs = document.getElementById('triggerInputs');
     
          // Preview Window Variables
-     let previewUpdateInterval;
      let lastPreviewUpdate = null;
-     let previewIsActive = true;
-     let previewDelayQueue = [];
-     let previewDelayTimeout = null;
 
     // Create trigger inputs with better UI
     keys.forEach(key => {
@@ -717,18 +724,161 @@
       triggerInputs.appendChild(container);
     });
 
-    // Status update functions
+    // WebSocket initialization and management
+    function initAdminWebSocket() {
+      // Determine WebSocket URL
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsPort = window.location.hostname === 'localhost' ? '8080' : window.location.port;
+      const wsUrl = `${protocol}//${window.location.hostname}:${wsPort}/admin`;
+      
+      try {
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = function(event) {
+          console.log('Admin WebSocket connected');
+          isConnectedToWebSocket = true;
+          wsReconnectAttempts = 0;
+          wsReconnectDelay = 2000;
+          updateConnectionStatus(true, 'WebSocket');
+        };
+        
+        ws.onmessage = function(event) {
+          try {
+            const message = JSON.parse(event.data);
+            handleAdminWebSocketMessage(message);
+          } catch (error) {
+            console.error('Error parsing admin WebSocket message:', error);
+          }
+        };
+        
+        ws.onclose = function(event) {
+          console.log('Admin WebSocket connection closed:', event.code, event.reason);
+          isConnectedToWebSocket = false;
+          ws = null;
+          updateConnectionStatus(false, 'Disconnected');
+          
+          // Attempt to reconnect
+          if (wsReconnectAttempts < wsMaxReconnectAttempts) {
+            wsReconnectAttempts++;
+            const delay = wsReconnectDelay * Math.pow(2, wsReconnectAttempts - 1);
+            console.log(`Reconnecting admin WebSocket in ${delay}ms (attempt ${wsReconnectAttempts}/${wsMaxReconnectAttempts})`);
+            
+            setTimeout(() => {
+              if (!ws || ws.readyState === WebSocket.CLOSED) {
+                initAdminWebSocket();
+              }
+            }, delay);
+          } else {
+            console.error('Max admin WebSocket reconnection attempts reached. Falling back to HTTP polling.');
+            fallbackToHttpPolling();
+          }
+        };
+        
+        ws.onerror = function(error) {
+          console.error('Admin WebSocket error:', error);
+          updateConnectionStatus(false, 'Error');
+        };
+        
+      } catch (error) {
+        console.error('Failed to create admin WebSocket connection:', error);
+        fallbackToHttpPolling();
+      }
+    }
+
+    function handleAdminWebSocketMessage(message) {
+      switch (message.type) {
+        case 'initial_state':
+        case 'scoreboard_update':
+        case 'state_update':
+          updateAdminFromRealtimeData(message.data);
+          break;
+          
+        case 'pong':
+          // Handle ping/pong for connection health
+          break;
+          
+        case 'update_confirmation':
+          showMessage('Update sent successfully!', 'success');
+          break;
+          
+        case 'error':
+          console.error('Admin WebSocket server error:', message.message);
+          showMessage(`Server error: ${message.message}`, 'error');
+          break;
+          
+        default:
+          console.warn('Unknown admin WebSocket message type:', message.type);
+      }
+    }
+
+    function updateAdminFromRealtimeData(data) {
+      // Update preview with real-time data
+      if (previewIsActive) {
+        updatePreviewElement('preview-teamA', data.teamA);
+        updatePreviewElement('preview-teamB', data.teamB);
+        updatePreviewElement('preview-scoreA', data.scoreA);
+        updatePreviewElement('preview-scoreB', data.scoreB);
+        updatePreviewElement('preview-status', data.status);
+        updatePreviewElement('preview-timer', data.time);
+        updatePreviewLogo('preview-logoA', data.logoA);
+        updatePreviewLogo('preview-logoB', data.logoB);
+      }
+      
+      // Update status displays
+      updateConnectionStatus(true, 'Real-time');
+      document.querySelector('#display-status .status-value').textContent = data.status || 'Ready';
+    }
+
+    function updateConnectionStatus(isConnected, connectionType = '') {
+      const statusElement = document.getElementById('connection-status');
+      const statusValue = document.querySelector('#connection-status .status-value');
+      
+      if (isConnected) {
+        statusElement.classList.add('active');
+        statusValue.textContent = `● Online ${connectionType ? '(' + connectionType + ')' : ''}`;
+        statusValue.style.color = '#27ae60';
+      } else {
+        statusElement.classList.remove('active');
+        statusValue.textContent = `● Offline ${connectionType ? '(' + connectionType + ')' : ''}`;
+        statusValue.style.color = '#e74c3c';
+      }
+    }
+
+    function fallbackToHttpPolling() {
+      console.log('Falling back to HTTP polling for admin panel');
+      updateConnectionStatus(true, 'HTTP Polling');
+      
+      // Set initial fetch
+      updateStatus();
+      
+      // Set interval for updates
+      setInterval(updateStatus, 5000);
+    }
+
+    // Status update functions (HTTP fallback)
     function updateStatus() {
+      if (isConnectedToWebSocket) return; // Don't poll if WebSocket is active
+      
       fetch('/api/scores')
         .then(res => res.json())
         .then(data => {
-          document.getElementById('connection-status').classList.add('active');
-          document.querySelector('#connection-status .status-value').textContent = '● Online';
+          updateConnectionStatus(true, 'HTTP');
           document.querySelector('#display-status .status-value').textContent = data.status || 'Ready';
+          
+          // Update preview if active
+          if (previewIsActive) {
+            updatePreviewElement('preview-teamA', data.teamA);
+            updatePreviewElement('preview-teamB', data.teamB);
+            updatePreviewElement('preview-scoreA', data.scoreA);
+            updatePreviewElement('preview-scoreB', data.scoreB);
+            updatePreviewElement('preview-status', data.status);
+            updatePreviewElement('preview-timer', data.time);
+            updatePreviewLogo('preview-logoA', data.logoA);
+            updatePreviewLogo('preview-logoB', data.logoB);
+          }
         })
         .catch(() => {
-          document.getElementById('connection-status').classList.remove('active');
-          document.querySelector('#connection-status .status-value').textContent = '● Offline';
+          updateConnectionStatus(false, 'HTTP Error');
         });
     }
 
@@ -743,43 +893,59 @@
        return sendActionWithPreview(action);
      }
 
-         document.getElementById('adminForm').addEventListener('submit', async function(e) {
-       e.preventDefault();
-       
-       const payload = {
-         teamA: document.getElementById('teamA').value,
-         logoA: document.getElementById('logoA').value,
-         teamB: document.getElementById('teamB').value,
-         logoB: document.getElementById('logoB').value,
-         scoreA: parseInt(document.getElementById('scoreA').value) || 0,
-         scoreB: parseInt(document.getElementById('scoreB').value) || 0,
-         status: document.getElementById('status').value
-       };
-       
-       // Instantly update preview with form data
-       updatePreviewInstantly(payload);
-       
-       try {
-         const res = await fetch('/api/update', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify(payload)
-         });
-         
-         if (res.ok) {
-           showMessage('Scoreboard updated successfully!', 'success');
-           updateStatus();
-           // Force immediate preview update after successful API call
-           setTimeout(updatePreview, 100);
-         } else {
-           throw new Error('Update failed');
-         }
-       } catch (error) {
-         showMessage('Failed to update scoreboard', 'error');
-         // Revert preview on error
-         setTimeout(updatePreview, 100);
-       }
-     });
+                 document.getElementById('adminForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const payload = {
+        teamA: document.getElementById('teamA').value,
+        logoA: document.getElementById('logoA').value,
+        teamB: document.getElementById('teamB').value,
+        logoB: document.getElementById('logoB').value,
+        scoreA: parseInt(document.getElementById('scoreA').value) || 0,
+        scoreB: parseInt(document.getElementById('scoreB').value) || 0,
+        status: document.getElementById('status').value
+      };
+      
+      // Instantly update preview with form data
+      updatePreviewInstantly(payload);
+      
+      try {
+        // Send via WebSocket if connected, otherwise use HTTP
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'admin_update',
+            payload: payload,
+            timestamp: Date.now()
+          }));
+          showMessage('Scoreboard updated successfully! (Real-time)', 'success');
+        } else {
+          // Fallback to HTTP
+          const res = await fetch('/api/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          
+          if (res.ok) {
+            showMessage('Scoreboard updated successfully! (HTTP)', 'success');
+          } else {
+            throw new Error('Update failed');
+          }
+        }
+        
+        // Don't update status manually - real-time updates will handle it
+        if (!isConnectedToWebSocket) {
+          updateStatus();
+          setTimeout(updatePreview, 100);
+        }
+      } catch (error) {
+        showMessage('Failed to update scoreboard', 'error');
+        // Revert preview on error
+        if (!isConnectedToWebSocket) {
+          setTimeout(updatePreview, 100);
+        }
+      }
+    });
 
     async function submitTriggers() {
       const triggers = {};
@@ -993,56 +1159,82 @@
        });
      }
 
-     // Enhanced timer action functions with preview updates (1-second delay)
-     async function sendActionWithPreview(action) {
-       try {
-         const response = await fetch('/api/update', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ action })
-         });
-         
-         if (response.ok) {
-           showMessage(`Timer ${action}ed successfully!`, 'success');
-           
-           // Update preview status with 1-second delay
-           let newStatus = 'Not Started';
-           if (action === 'start') newStatus = '1st Half';
-           else if (action === 'pause') newStatus = 'Paused';
-           else if (action === 'stop') newStatus = 'Not Started';
-           
-           const changes = { 'preview-status': newStatus };
-           updatePreviewWithDelay(changes);
-           
-           updateStatus();
-         } else {
-           throw new Error('Failed to send action');
-         }
-       } catch (error) {
-         showMessage(`Failed to ${action} timer`, 'error');
-       }
-     }
+         // Enhanced timer action functions with real-time WebSocket support
+    async function sendActionWithPreview(action) {
+      try {
+        // Send via WebSocket if connected, otherwise use HTTP
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'admin_update',
+            payload: { action },
+            timestamp: Date.now()
+          }));
+          showMessage(`Timer ${action}ed successfully! (Real-time)`, 'success');
+        } else {
+          // Fallback to HTTP
+          const response = await fetch('/api/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action })
+          });
+          
+          if (response.ok) {
+            showMessage(`Timer ${action}ed successfully! (HTTP)`, 'success');
+          } else {
+            throw new Error('Failed to send action');
+          }
+        }
+        
+        // Real-time updates will handle status changes automatically
+        if (!isConnectedToWebSocket) {
+          // Update preview status for HTTP fallback
+          let newStatus = 'Not Started';
+          if (action === 'start') newStatus = '1st Half';
+          else if (action === 'pause') newStatus = 'Paused';
+          else if (action === 'stop') newStatus = 'Not Started';
+          
+          const changes = { 'preview-status': newStatus };
+          updatePreviewWithDelay(changes);
+          updateStatus();
+        }
+      } catch (error) {
+        showMessage(`Failed to ${action} timer`, 'error');
+      }
+    }
 
-     // Initialize
-     updateStatus();
-     setInterval(updateStatus, 5000);
-     
-     // Initialize preview panel
-     startPreviewUpdates();
-     setupRealtimePreview();
+         // Initialize WebSocket connection and fallback
+    initAdminWebSocket();
+    
+    // Initialize preview panel
+    startPreviewUpdates();
+    setupRealtimePreview();
 
      // Auto-detect screen resolution
      document.querySelector('#resolution-status .status-value').textContent = 
        `${screen.width}x${screen.height}`;
        
-     // Handle page visibility for preview optimization
-     document.addEventListener('visibilitychange', () => {
-       if (document.hidden) {
-         stopPreviewUpdates();
-       } else {
-         startPreviewUpdates();
-       }
-     });
+         // Handle page visibility for preview optimization
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopPreviewUpdates();
+      } else {
+        startPreviewUpdates();
+        // Reconnect WebSocket if needed
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          initAdminWebSocket();
+        }
+      }
+    });
+
+    // Periodic connection health check for admin WebSocket
+    setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'ping',
+          timestamp: Date.now()
+        }));
+      }
+    }, 30000); // Every 30 seconds
   </script>
 </body>
 </html>

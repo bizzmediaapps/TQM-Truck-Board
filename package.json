@@ -1,0 +1,36 @@
+{
+  "name": "led-soccer-scoreboard",
+  "version": "1.0.0",
+  "description": "Real-time LED Soccer Scoreboard with WebSocket support",
+  "main": "api/websocket.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "build": "echo 'No build step required for this application'",
+    "test": "echo 'Tests to be implemented'"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  },
+  "keywords": [
+    "led",
+    "scoreboard",
+    "soccer",
+    "websocket",
+    "real-time",
+    "display"
+  ],
+  "author": "LED Scoreboard Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/led-soccer-scoreboard.git"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
